@@ -4,13 +4,30 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import User, Follower
 from .serializers import UserSerializer, FollowerSerializer
-from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
 
 
 @api_view(['POST'])
 def follow(request):
+    """
+    Follow a user.
+    ---
+    parameters:
+      - name: user_id
+        description: ID of the user to be followed
+        required: true
+        type: integer
+      - name: follower_id
+        description: ID of the follower
+        required: true
+        type: integer
+    responses:
+      201:
+        description: Followed successfully
+      400:
+        description: Already following
+    """
     user_id = request.data.get('user_id')
     follower_id = request.data.get('follower_id')
     user = get_object_or_404(User, id=user_id)
@@ -25,6 +42,24 @@ def follow(request):
 
 @api_view(['POST'])
 def unfollow(request):
+    """
+    Unfollow a user.
+    ---
+    parameters:
+      - name: user_id
+        description: ID of the user to be unfollowed
+        required: true
+        type: integer
+      - name: follower_id
+        description: ID of the follower
+        required: true
+        type: integer
+    responses:
+      200:
+        description: Unfollowed successfully
+      400:
+        description: Not following
+    """
     user_id = request.data.get('user_id')
     follower_id = request.data.get('follower_id')
     user = get_object_or_404(User, id=user_id)
@@ -40,6 +75,18 @@ def unfollow(request):
 
 @api_view(['GET'])
 def daily_follower_count(request, user_id):
+    """
+    Get the number of followers for a user in the last 24 hours.
+    ---
+    parameters:
+      - name: user_id
+        description: ID of the user
+        required: true
+        type: integer
+    responses:
+      200:
+        description: Number of followers in the last 24 hours
+    """
     user = get_object_or_404(User, id=user_id)
     start_date = timezone.now() - timedelta(days=1)
     follower_count = Follower.objects.filter(user=user, followed_at__gte=start_date).count()
@@ -48,6 +95,22 @@ def daily_follower_count(request, user_id):
 
 @api_view(['GET'])
 def common_followers(request, user1_id, user2_id):
+    """
+    Get the common followers of two users.
+    ---
+    parameters:
+      - name: user1_id
+        description: ID of the first user
+        required: true
+        type: integer
+      - name: user2_id
+        description: ID of the second user
+        required: true
+        type: integer
+    responses:
+      200:
+        description: List of common followers
+    """
     user1 = get_object_or_404(User, id=user1_id)
     user2 = get_object_or_404(User, id=user2_id)
 
